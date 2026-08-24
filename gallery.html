@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gallery — Solar Panels in Holm, Orkney</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <a href="index.html" class="brand">Solar Panels in Holm, Orkney</a>
+  <div class="links">
+    <a href="index.html">Home</a>
+    <a href="gallery.html" class="active">Gallery</a>
+    <a href="about.html">About</a>
+  </div>
+</nav>
+
+<main>
+  <h1>Gallery</h1>
+  
+  <div class="gradient-rule"></div>
+
+  <div class="gallery-grid" id="gallery-grid"></div>
+</main>
+
+<div class="lightbox-overlay" id="lightbox">
+  <button class="lightbox-close" id="lightbox-close">&times;</button>
+  <button class="lightbox-nav prev" id="lightbox-prev">&#8249;</button>
+  <img id="lightbox-img" src="" alt="">
+  <button class="lightbox-nav next" id="lightbox-next">&#8250;</button>
+  <div class="lightbox-caption" id="lightbox-caption"></div>
+</div>
+
+<script src="gallery.js"></script>
+</body>
+</html>

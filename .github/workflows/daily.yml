@@ -1,0 +1,57 @@
+name: Daily solar pipeline
+
+on:
+  schedule:
+    # 06:00 local time, approximated as two UTC schedules either side of
+    # the DST boundary (Actions schedules always run in UTC, and cron's
+    # month field only approximates the real BST/GMT switchover dates).
+    - cron: '0 5 * 3-10 *'   # 06:00 BST (UTC+1), roughly Mar-Oct
+    - cron: '0 6 * 1,2,11,12 *'  # 06:00 GMT (UTC+0), roughly Nov-Feb
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Date to run for (YYYY-MM-DD). Leave blank for yesterday.'
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: solar-data-write
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install -r requirements.txt
+
+      - name: Run daily pipeline
+        env:
+          SOLIS_KEY_ID: ${{ secrets.SOLIS_KEY_ID }}
+          SOLIS_KEY_SECRET: ${{ secrets.SOLIS_KEY_SECRET }}
+          SOLIS_INVERTER_ID: ${{ secrets.SOLIS_INVERTER_ID }}
+          SOLIS_INVERTER_SN: ${{ secrets.SOLIS_INVERTER_SN }}
+          MASTODON_INSTANCE_URL: ${{ secrets.MASTODON_INSTANCE_URL }}
+          MASTODON_ACCESS_TOKEN: ${{ secrets.MASTODON_ACCESS_TOKEN }}
+        run: |
+          if [ -n "${{ github.event.inputs.date }}" ]; then
+            python daily_pipeline.py "${{ github.event.inputs.date }}"
+          else
+            YESTERDAY=$(date -u -d "yesterday" +%Y-%m-%d)
+            python daily_pipeline.py "$YESTERDAY"
+          fi
+
+      - name: Commit and push if anything changed
+        run: |
+          git config user.name "solar-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add images data archive
+          git diff --cached --quiet || git commit -m "Daily solar update: $(date -u +'%Y-%m-%d')"
+          git push
