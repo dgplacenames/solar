@@ -209,6 +209,10 @@ def post_to_mastodon(image_path: str, caption: str, alt_text: str) -> None:
 def run_pipeline_for_date(target_date: str, post: bool = True,
                            save: bool = True, late_note: bool = False) -> bool:
     """Fetch, archive, chart, and (optionally) post for target_date. Returns success."""
+    if post and os.path.exists(os.path.join("archive", f"{target_date}.json")):
+        print(f"{target_date} already archived - skipping to avoid a duplicate Mastodon post.")
+        return True
+
     print(f"Fetching {target_date}...")
     try:
         points = fetch_day(target_date)
@@ -243,9 +247,8 @@ def run_pipeline_for_date(target_date: str, post: bool = True,
     first_time = points[0]["timeStr"].split(" ")[1][:5]
     last_time = points[-1]["timeStr"].split(" ")[1][:5]
     date_label = f"{weekday} {date_obj.day} {date_obj.strftime('%B %Y')}"
-    note = " (posted late - original run couldn't reach SolisCloud)" if late_note else ""
     caption = (f"On {date_label}, my #solarpanels generated {total_kwh:.1f} kWh "
-               f"of solar electricity.{note}\n"
+               f"of solar electricity.\n"
                f"Info: {SITE_URL}/about.html")
 
     alt_text = (
@@ -255,6 +258,8 @@ def run_pipeline_for_date(target_date: str, post: bool = True,
         f"for high output. The panels generated {total_kwh:.1f} kWh in total, "
         f"active from {first_time} to {last_time}."
     )
+    if late_note:
+        print("Note: this is a late catch-up post - the scheduled run didn't complete.")
     post_to_mastodon(chart_path, caption, alt_text)
     return True
 
