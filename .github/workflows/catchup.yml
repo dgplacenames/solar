@@ -1,13 +1,15 @@
 name: Catch-up check
 
-# Safety net for the daily job. Runs every 2 hours and checks whether
-# yesterday's data exists yet - if the 06:00 run failed (e.g. SolisCloud
-# was down), this retries and posts late rather than silently missing a
-# day. Once yesterday's archive exists, every later check is a fast no-op.
+# Safety net for the daily job. Runs every 2 hours from 08:15 UTC onward
+# (comfortably after the main job's 06:00 local slot in either BST or
+# GMT) and checks whether yesterday's data exists yet - if the 06:00 run
+# failed (e.g. SolisCloud was down), this retries and posts late rather
+# than silently missing a day. Once yesterday's archive exists, every
+# later check is a fast no-op.
 
 on:
   schedule:
-    - cron: '15 */2 * * *'
+    - cron: '15 8-22/2 * * *'
   workflow_dispatch:
 
 permissions:
